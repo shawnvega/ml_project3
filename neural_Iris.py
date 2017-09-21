@@ -10,6 +10,9 @@ from sklearn.neural_network import MLPClassifier
 import numpy as np
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib
+from matplotlib.ticker import FuncFormatter
 
 training_set_x = []
 training_set_y = []
@@ -48,32 +51,61 @@ def print_2d_matrix(a_list, y):
         print(row, y[count], sep=',')
 
 
+def to_percent(y, position):
+    # Ignore the passed in position. This has the effect of scaling the default
+    # tick locations.
+    s = str(100 * y)
+
+    # The percent symbol needs escaping in latex
+    if matplotlib.rcParams['text.usetex'] is True:
+        return s + r'$\%$'
+    else:
+        return s + '%'
+    
+    
+def to_int(x, position):
+    # Ignore the passed in position. This has the effect of scaling the default
+    # tick locations.
+    s = int(x)
+    return s
+
+def average(alist):
+    asum = sum(alist)
+    return asum/len(alist)
+    
+
 if __name__ == '__main__':
     read_and_split_data('iris_dataset/iris.data')
     print("----------- training set ------------")
     print_2d_matrix(training_set_x, training_set_y)
     print("----------- training ------------")
     accuracy_list = list()
-    clf = MLPClassifier(solver='lbfgs', alpha=1e-4, hidden_layer_sizes=(1), random_state=3)
-    clf.fit(training_set_x, training_set_y)
-    predictions = clf.predict(testing_set_x)
-    print(predictions)
-    accuracy = accuracy_score(testing_set_y, predictions)
-    print("accuracy = {:.1%}".format(accuracy))
-#    for max_tree_depth in range(1,13):
-#        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
-#        clf = clf.fit(training_set_x, training_set_y)
-#        print("----------- testing ------------")
-#        print('max depth =', max_tree_depth)
-#        predictions = clf.predict(testing_set_x)
-#        print(predictions)
-#        accuracy = accuracy_score(testing_set_y, predictions)
-#        print("accuracy = {:.1%}".format(accuracy))
-#        accuracy_list.append(accuracy)
-#    plt.plot([x for x in range(1, len(accuracy_list) + 1)], accuracy_list)
-#    plt.ylabel('accuracy')
-#    plt.xlabel('max_depth')
-#    plt.grid(True)
-#    plt.show()
+    layer_accuracy = list()
+    for layers in range(1, 10):
+        for randomx in range(0,21):
+            clf = MLPClassifier(solver='lbfgs', alpha=0.1, hidden_layer_sizes=(layers), random_state=randomx)
+            clf.fit(training_set_x, training_set_y)
+            predictions = clf.predict(testing_set_x)
+            print(predictions)
+            accuracy = accuracy_score(testing_set_y, predictions)
+            print(randomx, "accuracy = {:.1%}".format(accuracy))
+            layer_accuracy.append(accuracy)
+        accuracy_list.append(average(layer_accuracy))
+        layer_accuracy = list()
+        print('layers =', layers)
+    print('average accuracy =', average(accuracy_list))
+    plt.plot([x for x in range(1, len(accuracy_list) + 1)], accuracy_list)
+    formatter = FuncFormatter(to_percent)
+    plt.gca().yaxis.set_major_formatter(formatter)
+    xformatter = FuncFormatter(to_int)
+    plt.gca().xaxis.set_major_formatter(xformatter)
+    #vals = plt.get_yticks()
+    #vals.set_yticklabels(['{:3.2f}%'.format(x*100) for x in vals])
+    plt.ylabel('average accuracy')
+    #plt.xlabel('random state')
+    plt.xlabel('Nodes in hidden layer')
+    plt.title('Iris Neural Network')
+    plt.grid(True)
+    plt.show()
     
 #print(row_num, 'v: ', ', '.join(str(v) for v in row))

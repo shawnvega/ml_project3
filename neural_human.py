@@ -12,6 +12,8 @@ from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import time
 import numbers
+import matplotlib
+from matplotlib.ticker import FuncFormatter
 
 type_map = dict()
 type_num = 0
@@ -65,6 +67,28 @@ def show_not_float(array):
             if not isinstance(y,numbers.Real):
                 print(y, 'is not float')
             
+            
+def to_percent(y, position):
+    # Ignore the passed in position. This has the effect of scaling the default
+    # tick locations.
+    s = str(100 * y)
+
+    # The percent symbol needs escaping in latex
+    if matplotlib.rcParams['text.usetex'] is True:
+        return s + r'$\%$'
+    else:
+        return s + '%'
+
+
+def to_int(x, position):
+    # Ignore the passed in position. This has the effect of scaling the default
+    # tick locations.
+    s = int(x)
+    return s
+
+def average(alist):
+    asum = sum(alist)
+    return asum/len(alist)
 
 
 if __name__ == '__main__':
@@ -87,13 +111,29 @@ if __name__ == '__main__':
     y_test = array_to_int(y_test)
     print('training')
     accuracy_list = list()
-    clf = MLPClassifier(solver='lbfgs', alpha=1e-4, hidden_layer_sizes=(5), random_state=1)
-    clf.fit(x_train, y_train)
-    predictions = clf.predict(x_test)
-    print(predictions)
-    accuracy = accuracy_score(y_test, predictions)
-    print("accuracy = {:.1%}".format(accuracy))
-#    for max_tree_depth in range(1,19):
+    layer_accuracy = list()
+    highest = 0
+    lowest = 1
+    for nodes in range(10, 100,10):
+        for randomx in range(0,11):
+            clf = MLPClassifier(solver='lbfgs', alpha=0.1, hidden_layer_sizes=(nodes), random_state=randomx)
+            clf.fit(x_train, y_train)
+            print('clf.n_layers =', clf.n_layers_)
+            predictions = clf.predict(x_test)
+            print(predictions)
+            accuracy = accuracy_score(y_test, predictions)
+            if(accuracy > highest):
+                highest = accuracy
+                print('highest =', accuracy, 'nodes = ', nodes, 'random = ', randomx)
+            if(accuracy < lowest):
+                lowest = accuracy
+                print('lowest =', accuracy, 'nodes = ', nodes, 'random = ', randomx)
+            layer_accuracy.append(accuracy)
+        aver = average(layer_accuracy)
+        print('average =', aver)
+        accuracy_list.append(aver)
+        layer_accuracy = list()
+        print('nodes =', nodes)
 #        start_time = time.time() * 1000
 #        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
 #        clf = clf.fit(x_train, y_train)
@@ -102,12 +142,14 @@ if __name__ == '__main__':
 #        predictions = clf.predict(x_test)
 #        stop_time = time.time() * 1000
 #        print('took', (int(round(stop_time - start_time))), 'milliseconds' )
-#        accuracy = accuracy_score(y_test, predictions)
-#        print("accuracy = {:.1%}".format(accuracy))
-#        accuracy_list.append(accuracy)
-#    plt.plot([x for x in range(1, len(accuracy_list) + 1)], accuracy_list)
-#    plt.ylabel('accuracy')
-#    plt.xlabel('max_depth')
-#    plt.title('Human Activity')
-#    plt.grid(True)
-#    plt.show()
+    print("average accuracy = {:.1%}".format(average(accuracy_list)))
+    plt.plot([x for x in range(10, (len(accuracy_list) + 1) * 10, 10)], accuracy_list)
+    formatter = FuncFormatter(to_percent)
+    plt.gca().yaxis.set_major_formatter(formatter)
+    xformatter = FuncFormatter(to_int)
+    plt.gca().xaxis.set_major_formatter(xformatter)
+    plt.ylabel('average accuracy')
+    plt.xlabel('Nodes in hidden layer')
+    plt.title('Human Activity Neural Network')
+    plt.grid(True)
+    plt.show()
