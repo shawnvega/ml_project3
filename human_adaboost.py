@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep 18 21:12:05 2017
+Created on Fri Sep 22 23:52:46 2017
 
 @author: Shawn
 """
 
 import csv
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import AdaBoostClassifier
 import numpy as np
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
@@ -114,31 +114,30 @@ if __name__ == '__main__':
     layer_accuracy = list()
     highest = 0
     lowest = 1
-    step_size = 100
-    start = 100
-    end = 1000
-    for nodes in range(start, end,step_size):
+    step_size = 10
+    start = 10
+    end = 100
+    for estimators in range(start, end,step_size):
         for randomx in range(0,1):
-            clf = MLPClassifier(solver='lbfgs', alpha=0.1, hidden_layer_sizes=(nodes), random_state=randomx)
+            clf = AdaBoostClassifier(base_estimator=None, n_estimators=estimators, learning_rate=1.0, algorithm='SAMME.R', random_state=None)
             print("--training--")
             clf.fit(x_train, y_train)
-            print('clf.n_layers =', clf.n_layers_)
             print("--predicting--")
             predictions = clf.predict(x_test)
             print(predictions)
             accuracy = accuracy_score(y_test, predictions)
             if(accuracy > highest):
                 highest = accuracy
-                print('highest =', accuracy, 'nodes = ', nodes, 'random = ', randomx)
+                print('highest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
             if(accuracy < lowest):
                 lowest = accuracy
-                print('lowest =', accuracy, 'nodes = ', nodes, 'random = ', randomx)
+                print('lowest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
             layer_accuracy.append(accuracy)
         aver = average(layer_accuracy)
         print('average =', aver)
         accuracy_list.append(aver)
         layer_accuracy = list()
-        print('nodes =', nodes)
+        print('estimators =', estimators)
 #        start_time = time.time() * 1000
 #        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
 #        clf = clf.fit(x_train, y_train)
