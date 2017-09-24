@@ -6,13 +6,13 @@ Created on Sat Sep 23 20:24:46 2017
 """
 
 import csv
-from sklearn.ensemble import AdaBoostClassifier
 import numpy as np
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib
 from matplotlib.ticker import FuncFormatter
+from sklearn import svm
 
 training_set_x = []
 training_set_y = []
@@ -81,13 +81,13 @@ if __name__ == '__main__':
     print("----------- training ------------")
     accuracy_list = list()
     layer_accuracy = list()
-    start = 1
-    end = 10
+    start = 0
+    end = 1
     step_size = 1
-    lrate = 0.1
-    for estimators in range(start, end, step_size):
+    kernel_list = ['linear','rbf','poly','sigmoid']
+    for estimator in kernel_list:
         for randomx in range(0, 1):
-            clf = AdaBoostClassifier(n_estimators=estimators, learning_rate=lrate)
+            clf = svm.SVC(kernel='linear', cache_size=1000, random_state=randomx)
             clf.fit(training_set_x, training_set_y)
             predictions = clf.predict(testing_set_x)
             print(predictions)
@@ -96,19 +96,18 @@ if __name__ == '__main__':
             layer_accuracy.append(accuracy)
         accuracy_list.append(average(layer_accuracy))
         layer_accuracy = list()
-        print('estimators =', estimators)
+        print('trial =', trial)
     print('average accuracy =', average(accuracy_list))
-    plt.plot([x for x in range(start, end, step_size)], accuracy_list)
+    y_pos = np.arange(len(kernel_list))
+    plt.bar(y_pos, accuracy_list, align='center', alpha=0.5)
+    #plt.bar([x for x in range(start, end , step_size)], accuracy_list)
     formatter = FuncFormatter(to_percent)
     plt.gca().yaxis.set_major_formatter(formatter)
-    xformatter = FuncFormatter(to_int)
-    plt.gca().xaxis.set_major_formatter(xformatter)
-    #vals = plt.get_yticks()
-    #vals.set_yticklabels(['{:3.2f}%'.format(x*100) for x in vals])
+    plt.xticks(y_pos, kernel_list)
     plt.ylabel('average accuracy')
     #plt.xlabel('random state')
-    plt.xlabel('Estimators in Classifier')
-    plt.title('Iris AdaBoostClassifier (learn rate = {:.1f})'.format(lrate))
+    plt.xlabel('trial#')
+    plt.title('Iris linear svm')
     plt.grid(True)
     plt.show()
     

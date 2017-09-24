@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 22 23:52:46 2017
+Created on Sat Sep 23 23:19:47 2017
 
 @author: Shawn
 """
 
 import csv
-from sklearn.ensemble import AdaBoostClassifier
 import numpy as np
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
@@ -14,6 +13,8 @@ import time
 import numbers
 import matplotlib
 from matplotlib.ticker import FuncFormatter
+from sklearn import svm
+
 
 type_map = dict()
 type_num = 0
@@ -114,13 +115,14 @@ if __name__ == '__main__':
     layer_accuracy = list()
     highest = 0
     lowest = 1
-    step_size = 200
-    start = 200
-    end = 1500
-    lrate = 2.0
-    for estimators in range(start, end,step_size):
+    step_size = 1
+    start = 1
+    end = 5
+    lrate = 1.5
+    kernel_list = ['linear','rbf','poly','sigmoid']
+    for estimator in kernel_list:
         for randomx in range(0,1):
-            clf = AdaBoostClassifier(n_estimators=estimators, learning_rate=lrate)
+            clf = svm.SVC(kernel=estimator, cache_size=1000, random_state=randomx)
             print("--training--")
             clf.fit(x_train, y_train)
             print("--predicting--")
@@ -129,16 +131,16 @@ if __name__ == '__main__':
             accuracy = accuracy_score(y_test, predictions)
             if(accuracy > highest):
                 highest = accuracy
-                print('highest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
+                print('highest =', accuracy, 'estimator = ', estimator, 'random = ', randomx)
             if(accuracy < lowest):
                 lowest = accuracy
-                print('lowest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
+                print('lowest =', accuracy, 'estimator = ', estimator, 'random = ', randomx)
             layer_accuracy.append(accuracy)
         aver = average(layer_accuracy)
         print('average =', aver)
         accuracy_list.append(aver)
         layer_accuracy = list()
-        print('estimators =', estimators)
+        print('estimator =', estimator)
 #        start_time = time.time() * 1000
 #        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
 #        clf = clf.fit(x_train, y_train)
@@ -148,13 +150,16 @@ if __name__ == '__main__':
 #        stop_time = time.time() * 1000
 #        print('took', (int(round(stop_time - start_time))), 'milliseconds' )
     print("average accuracy = {:.1%}".format(average(accuracy_list)))
-    plt.plot([x for x in range(start, end , step_size)], accuracy_list)
+    y_pos = np.arange(len(kernel_list))
+    plt.bar(y_pos, accuracy_list, align='center', alpha=0.5)
+    #plt.bar([x for x in range(start, end , step_size)], accuracy_list)
     formatter = FuncFormatter(to_percent)
     plt.gca().yaxis.set_major_formatter(formatter)
-    xformatter = FuncFormatter(to_int)
-    plt.gca().xaxis.set_major_formatter(xformatter)
+    plt.xticks(y_pos, kernel_list)
+    #xformatter = FuncFormatter(to_int)
+    #plt.gca().xaxis.set_major_formatter(xformatter)
     plt.ylabel('average accuracy')
     plt.xlabel('Nodes in hidden layer')
-    plt.title('Human Activity AdaBoostClassifier (learn rate = {:.1f})'.format(lrate))
-    plt.grid(True)
+    plt.title('Human Activity Linear SVM')
+    plt.grid(False)
     plt.show()
