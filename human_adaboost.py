@@ -115,11 +115,12 @@ if __name__ == '__main__':
     highest = 0
     lowest = 1
     step_size = 200
-    start = 200
-    end = 1500
+    start = 100
+    end = 4000
     lrate = 2.0
     for estimators in range(start, end,step_size):
         for randomx in range(0,1):
+            start_time = time.time() * 1000
             clf = AdaBoostClassifier(n_estimators=estimators, learning_rate=lrate)
             print("--training--")
             clf.fit(x_train, y_train)
@@ -134,12 +135,14 @@ if __name__ == '__main__':
                 lowest = accuracy
                 print('lowest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
             layer_accuracy.append(accuracy)
+            stop_time = time.time() * 1000
+            print('took', (int(round(stop_time - start_time))), 'milliseconds' )
         aver = average(layer_accuracy)
         print('average =', aver)
         accuracy_list.append(aver)
         layer_accuracy = list()
         print('estimators =', estimators)
-#        start_time = time.time() * 1000
+#        
 #        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
 #        clf = clf.fit(x_train, y_train)
 #        print("----------- testing ------------")
@@ -153,8 +156,8 @@ if __name__ == '__main__':
     plt.gca().yaxis.set_major_formatter(formatter)
     xformatter = FuncFormatter(to_int)
     plt.gca().xaxis.set_major_formatter(xformatter)
-    plt.ylabel('average accuracy')
-    plt.xlabel('Nodes in hidden layer')
+    plt.ylabel('Average Accuracy')
+    plt.xlabel('Number of Estimators')
     plt.title('Human Activity AdaBoostClassifier (learn rate = {:.1f})'.format(lrate))
     plt.grid(True)
     plt.show()
