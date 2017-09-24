@@ -114,12 +114,13 @@ if __name__ == '__main__':
     layer_accuracy = list()
     highest = 0
     lowest = 1
-    step_size = 10
-    start = 10
-    end = 100
+    step_size = 300
+    start = 100
+    end = 4000
+    lrate = 2.0
     for estimators in range(start, end,step_size):
         for randomx in range(0,1):
-            clf = AdaBoostClassifier(base_estimator=None, n_estimators=estimators, learning_rate=1.0, algorithm='SAMME.R', random_state=None)
+            clf = AdaBoostClassifier(n_estimators=estimators, learning_rate=lrate)
             print("--training--")
             clf.fit(x_train, y_train)
             print("--predicting--")
@@ -154,6 +155,6 @@ if __name__ == '__main__':
     plt.gca().xaxis.set_major_formatter(xformatter)
     plt.ylabel('average accuracy')
     plt.xlabel('Nodes in hidden layer')
-    plt.title('Human Activity Neural Network')
+    plt.title('Human Activity AdaBoostClassifier (learn rate = {:.1f})'.format(lrate))
     plt.grid(True)
     plt.show()
