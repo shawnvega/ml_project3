@@ -122,7 +122,7 @@ if __name__ == '__main__':
     kernel_list = ['linear','rbf','poly','sigmoid']
     for estimator in kernel_list:
         for randomx in range(0,1):
-            clf = svm.SVC(kernel=estimator, cache_size=1000, random_state=randomx)
+            clf = svm.SVC(C=1.0 ,kernel=estimator, cache_size=1000, random_state=randomx,  class_weight='balanced')
             print("--training--")
             clf.fit(x_train, y_train)
             print("--predicting--")

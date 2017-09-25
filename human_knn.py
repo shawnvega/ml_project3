@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 22 23:52:46 2017
+Created on Sun Sep 24 14:12:40 2017
 
 @author: Shawn
 """
 
 import csv
-from sklearn.ensemble import AdaBoostClassifier
 import numpy as np
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
@@ -14,6 +13,8 @@ import time
 import numbers
 import matplotlib
 from matplotlib.ticker import FuncFormatter
+from sklearn.neighbors import KNeighborsClassifier
+
 
 type_map = dict()
 type_num = 0
@@ -110,23 +111,16 @@ if __name__ == '__main__':
     print('converting x_test')
     y_test = array_to_int(y_test)
     print('training')
-    ititeration_time = -1
-    ititeration_count = 0
-    total_start_time = time.time()
     accuracy_list = list()
     layer_accuracy = list()
     highest = 0
     lowest = 1
-    step_size = 250
-    start = 250
-    end = 4000
-    lrate = 2.0
-    total_iterations = end // step_size
-    iterations_remaining = total_iterations
-    for estimators in range(start, end,step_size):
+    step_size = 1
+    start = 1
+    end = 50
+    for neighbors in range(start, end,step_size):
         for randomx in range(0,1):
-            start_time = time.time() * 1000
-            clf = AdaBoostClassifier(n_estimators=estimators, learning_rate=lrate)
+            clf = KNeighborsClassifier(n_neighbors=neighbors, n_jobs=4)
             print("--training--")
             clf.fit(x_train, y_train)
             print("--predicting--")
@@ -135,22 +129,17 @@ if __name__ == '__main__':
             accuracy = accuracy_score(y_test, predictions)
             if(accuracy > highest):
                 highest = accuracy
-                print('highest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
+                print('highest =', accuracy, 'neighbors = ', neighbors, 'random = ', randomx)
             if(accuracy < lowest):
                 lowest = accuracy
-                print('lowest =', accuracy, 'estimators = ', estimators, 'random = ', randomx)
+                print('lowest =', accuracy, 'neighbors = ', neighbors, 'random = ', randomx)
             layer_accuracy.append(accuracy)
-            stop_time = time.time() * 1000
-            print('took', (int(round(stop_time - start_time))), 'milliseconds' )
-        iterations_remaining -= 1
-        time_remaining = int((round(stop_time - start_time)) // 1000) * iterations_remaining
-        print("time remaining =", time_remaining, 'seconds')
         aver = average(layer_accuracy)
         print('average =', aver)
         accuracy_list.append(aver)
         layer_accuracy = list()
-        print('estimators =', estimators)
-#        
+        print('neighbors =', neighbors)
+#        start_time = time.time() * 1000
 #        clf = tree.DecisionTreeClassifier(max_depth=max_tree_depth)
 #        clf = clf.fit(x_train, y_train)
 #        print("----------- testing ------------")
@@ -164,8 +153,8 @@ if __name__ == '__main__':
     plt.gca().yaxis.set_major_formatter(formatter)
     xformatter = FuncFormatter(to_int)
     plt.gca().xaxis.set_major_formatter(xformatter)
-    plt.ylabel('Average Accuracy')
-    plt.xlabel('Number of Estimators')
-    plt.title('Human Activity AdaBoostClassifier (learn rate = {:.1f})'.format(lrate))
+    plt.ylabel('average accuracy')
+    plt.xlabel('Neighbors used for Classifier')
+    plt.title('Human Activity KNN')
     plt.grid(True)
     plt.show()

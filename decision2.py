@@ -33,10 +33,10 @@ def print_2d_matrix(a_list, y):
 
 
 if __name__ == '__main__':
-    x_train = read_data('../uci_har_dataset/train/X_train.txt')
-    y_train = read_data('../uci_har_dataset/train/Y_train.txt')
-    x_test = read_data('../uci_har_dataset/test/X_test.txt')
-    y_test = read_data('../uci_har_dataset/test/Y_test.txt')
+    x_train = read_data('uci_har_dataset/train/X_train.txt')
+    y_train = read_data('uci_har_dataset/train/Y_train.txt')
+    x_test = read_data('uci_har_dataset/test/X_test.txt')
+    y_test = read_data('uci_har_dataset/test/Y_test.txt')
     print(len(x_test[0]), len(x_test))
     accuracy_list = list()
     for max_tree_depth in range(1,19):

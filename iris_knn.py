@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Sep 23 20:24:46 2017
+Created on Sun Sep 24 13:54:35 2017
 
 @author: Shawn
 """
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib
 from matplotlib.ticker import FuncFormatter
-from sklearn import svm
+from sklearn.neighbors import KNeighborsClassifier
 
 training_set_x = []
 training_set_y = []
@@ -81,13 +81,12 @@ if __name__ == '__main__':
     print("----------- training ------------")
     accuracy_list = list()
     layer_accuracy = list()
-    start = 0
-    end = 1
+    start = 1
+    end = 17
     step_size = 1
-    kernel_list = ['linear','rbf','poly','sigmoid']
-    for estimator in kernel_list:
+    for neighbors in range(start, end, step_size):
         for randomx in range(0, 1):
-            clf = svm.SVC(kernel='linear', cache_size=1000, random_state=randomx)
+            clf = KNeighborsClassifier(n_neighbors=neighbors)
             clf.fit(training_set_x, training_set_y)
             predictions = clf.predict(testing_set_x)
             print(predictions)
@@ -97,16 +96,17 @@ if __name__ == '__main__':
         accuracy_list.append(average(layer_accuracy))
         layer_accuracy = list()
     print('average accuracy =', average(accuracy_list))
-    y_pos = np.arange(len(kernel_list))
-    plt.bar(y_pos, accuracy_list, align='center', alpha=0.5)
-    #plt.bar([x for x in range(start, end , step_size)], accuracy_list)
+    plt.plot([x for x in range(start, end, step_size)], accuracy_list)
     formatter = FuncFormatter(to_percent)
     plt.gca().yaxis.set_major_formatter(formatter)
-    plt.xticks(y_pos, kernel_list)
+    xformatter = FuncFormatter(to_int)
+    plt.gca().xaxis.set_major_formatter(xformatter)
+    #vals = plt.get_yticks()
+    #vals.set_yticklabels(['{:3.2f}%'.format(x*100) for x in vals])
     plt.ylabel('average accuracy')
     #plt.xlabel('random state')
-    plt.xlabel('trial#')
-    plt.title('Iris linear svm')
+    plt.xlabel('Neighbors in Classifier')
+    plt.title('Iris KNN')
     plt.grid(True)
     plt.show()
     
